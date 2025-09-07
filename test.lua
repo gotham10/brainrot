@@ -3,6 +3,21 @@ local ws = game:GetService("Workspace")
 local ctrls = rs:WaitForChild("Controllers")
 local AnimalClient = require(rs:WaitForChild("Classes"):WaitForChild("AnimalClient"))
 local PlotController = require(ctrls:WaitForChild("PlotController"))
+local PodiumEvent = rs:WaitForChild("Remotes"):WaitForChild("PodiumEvent")
+
+local function formatNumber(value)
+	local suffixes = {"", "K", "M", "B", "T"}
+	local suffixNum = 1
+	while value >= 1000 and suffixNum < #suffixes do
+		value = value / 1000
+		suffixNum = suffixNum + 1
+	end
+	if suffixNum > 1 then
+		return string.format("%.2f%s", value, suffixes[suffixNum])
+	else
+		return tostring(math.floor(value))
+	end
+end
 
 PlotController:Start()
 local myPlot
@@ -96,19 +111,21 @@ return function(animalsToSpawn, chosenIndex)
 				if prompt:IsA("ProximityPrompt") then
 					prompt.Enabled = false
 					if prompt.KeyboardKeyCode == Enum.KeyCode.E then
+						local sellValue = math.ceil((info.price or 0) * 0.5)
 						prompt.Enabled = true
-						prompt.ActionText = "Sell"
-						local price = info.price or 50
-						prompt.ObjectText = info.name .. " (" .. tostring(price) .. "$)"
+						prompt:SetAttribute("State", "Sell")
+						prompt.ActionText = "Sell: $" .. formatNumber(sellValue)
+						prompt.ObjectText = ""
 						table.insert(promptConnections, prompt.Triggered:Connect(function()
-							model:Destroy()
+							PodiumEvent:FireServer(podium.Name)
 						end))
 					elseif prompt.KeyboardKeyCode == Enum.KeyCode.F then
 						prompt.Enabled = true
+						prompt:SetAttribute("State", "Grab")
 						prompt.ActionText = "Grab"
 						prompt.ObjectText = info.name
 						table.insert(promptConnections, prompt.Triggered:Connect(function()
-							model:Destroy()
+							PodiumEvent:FireServer("Grab", podium.Name)
 						end))
 					end
 				end
@@ -123,6 +140,8 @@ return function(animalsToSpawn, chosenIndex)
 				for _, prompt in ipairs(promptAttachment:GetChildren()) do
 					if prompt:IsA("ProximityPrompt") then
 						prompt.Enabled = false
+						prompt.ActionText = ""
+						prompt.ObjectText = ""
 					end
 				end
 			end
