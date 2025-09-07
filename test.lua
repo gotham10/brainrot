@@ -1,9 +1,9 @@
+print("version 0.1")
 local rs = game:GetService("ReplicatedStorage")
 local ws = game:GetService("Workspace")
 local ctrls = rs:WaitForChild("Controllers")
 local AnimalClient = require(rs:WaitForChild("Classes"):WaitForChild("AnimalClient"))
 local PlotController = require(ctrls:WaitForChild("PlotController"))
-local PodiumEvent = rs:WaitForChild("Remotes"):WaitForChild("PodiumEvent")
 
 local function formatNumber(value)
 	local suffixes = {"", "K", "M", "B", "T"}
@@ -117,7 +117,7 @@ return function(animalsToSpawn, chosenIndex)
 						prompt.ActionText = "Sell: $" .. formatNumber(sellValue)
 						prompt.ObjectText = ""
 						table.insert(promptConnections, prompt.Triggered:Connect(function()
-							PodiumEvent:FireServer(podium.Name)
+							model:Destroy()
 						end))
 					elseif prompt.KeyboardKeyCode == Enum.KeyCode.F then
 						prompt.Enabled = true
@@ -125,7 +125,7 @@ return function(animalsToSpawn, chosenIndex)
 						prompt.ActionText = "Grab"
 						prompt.ObjectText = info.name
 						table.insert(promptConnections, prompt.Triggered:Connect(function()
-							PodiumEvent:FireServer("Grab", podium.Name)
+							model:Destroy()
 						end))
 					end
 				end
